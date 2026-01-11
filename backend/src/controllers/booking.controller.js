@@ -1,7 +1,9 @@
 const Bus = require("../models/bus");
 const Booking = require("../models/booking");
 
-// USER: Book seat
+/* ============================
+   USER: BOOK SEAT
+============================ */
 exports.bookSeat = async (req, res) => {
   try {
     const { busId, seatNumber } = req.body;
@@ -18,10 +20,11 @@ exports.bookSeat = async (req, res) => {
       return res.status(400).json({ message: "Seat already booked" });
     }
 
-    // Atomic update
+    // Update seat
     seat.status = "BOOKED";
     await bus.save();
 
+    // Create booking
     await Booking.create({
       userId: req.user.userId,
       busId: bus._id,
@@ -30,20 +33,22 @@ exports.bookSeat = async (req, res) => {
 
     res.status(201).json({ message: "Seat booked successfully" });
   } catch (err) {
-      console.error("BOOKING ERROR:", err);
-      res.status(500).json({
-        message: "Booking failed",
-        error: err.message,
-      });
-    }
-
+    console.error("BOOKING ERROR:", err);
+    res.status(500).json({ message: "Booking failed" });
+  }
 };
 
-// USER: View own bookings
+/* ============================
+   USER: VIEW OWN BOOKINGS
+============================ */
 exports.getMyBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ userId: req.user.userId })
-      .populate("busId", "busNumber source destination startDateTime endDateTime");
+    const bookings = await Booking.find({
+      userId: req.user.userId,
+    }).populate(
+      "busId",
+      "busNumber source destination startDateTime endDateTime price"
+    );
 
     res.json(bookings);
   } catch {
@@ -51,7 +56,9 @@ exports.getMyBookings = async (req, res) => {
   }
 };
 
-// USER: Cancel booking
+/* ============================
+   USER: CANCEL BOOKING
+============================ */
 exports.cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -76,24 +83,18 @@ exports.cancelBooking = async (req, res) => {
     res.status(500).json({ message: "Cancel failed" });
   }
 };
-// ADMIN: View bookings for a bus
+
+/* ============================
+   ADMIN: VIEW BOOKINGS BY BUS
+============================ */
 exports.getBookingsByBus = async (req, res) => {
   try {
-    const bookings = await Booking.find({ busId: req.params.busId })
-      .populate("userId", "name email");
+    const bookings = await Booking.find({
+      busId: req.params.busId,
+    }).populate("userId", "name email");
 
     res.json(bookings);
   } catch {
     res.status(500).json({ message: "Failed to fetch bookings" });
-  }
-};
-
-exports.deleteBus = async (req, res) => {
-  try {
-    await Bus.findByIdAndDelete(req.params.id);
-    await Booking.deleteMany({ busId: req.params.id }); // cleanup
-    res.json({ message: "Bus deleted" });
-  } catch (err) {
-    res.status(500).json({ message: "Delete failed" });
   }
 };
