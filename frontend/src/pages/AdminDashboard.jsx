@@ -6,7 +6,7 @@ export default function AdminDashboard() {
   const [buses, setBuses] = useState([]);
   const [selectedBusId, setSelectedBusId] = useState(null);
   const [busBookings, setBusBookings] = useState([]);
-  
+
   useEffect(() => {
     fetchBuses();
   }, []);
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   };
 
   const fetchBusBookings = async (busId) => {
-    setBusBookings([]);        // 🔥 CLEAR OLD DATA FIRST
+    setBusBookings([]);
     setSelectedBusId(busId);
 
     try {
@@ -31,7 +31,6 @@ export default function AdminDashboard() {
       alert("Failed to fetch bookings");
     }
   };
-
 
   const resetBus = async (id) => {
     try {
@@ -50,85 +49,202 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div style={{ padding: 40 }}>
-      <h2>Admin Dashboard</h2>
+    <div style={styles.page}>
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <h2 style={styles.title}>🛠 Admin Dashboard</h2>
+          <button style={styles.logout} onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
 
-      <button onClick={handleLogout}>Logout</button>
+        <CreateBusForm onBusCreated={fetchBuses} />
 
-      <hr />
-      <CreateBusForm onBusCreated={fetchBuses} />
-      <hr />
-      <h3>All Buses</h3>
+        <h3 style={styles.section}>All Buses</h3>
 
-      {buses.length === 0 ? (
-        <p>No buses available</p>
-      ) : (
-        buses.map((bus) => {
-          const totalSeats = bus.seats.length;
-          const bookedSeats = bus.seats.filter(
-            (s) => s.status === "BOOKED"
-          );
+        {buses.length === 0 ? (
+          <p style={styles.empty}>No buses available</p>
+        ) : (
+          buses.map((bus) => {
+            const totalSeats = bus.seats.length;
+            const bookedSeats = bus.seats.filter(
+              (s) => s.status === "BOOKED"
+            );
 
-          return (
-            <div
-              key={bus._id}
-              style={{
-                border: "1px solid #ccc",
-                padding: 15,
-                marginBottom: 20,
-              }}
-            >
-              <p><strong>Bus Number:</strong> {bus.busNumber}</p>
-              <p>
-                <strong>Route:</strong> {bus.source} → {bus.destination}
-              </p>
-              <p>
-                <strong>Start:</strong>{" "}
-                {new Date(bus.startDateTime).toLocaleString()}
-              </p>
-              <p>
-                <strong>End:</strong>{" "}
-                {new Date(bus.endDateTime).toLocaleString()}
-              </p>
-              <p><strong>Price:</strong> ₹{bus.price}</p>
-              <p>
-                <strong>Seats:</strong>{" "}
-                {bookedSeats.length} / {totalSeats} booked
-              </p>
+            return (
+              <div key={bus._id} style={styles.card}>
+                <div style={styles.cardTop}>
+                  <div>
+                    <h4 style={styles.busNo}>{bus.busNumber}</h4>
+                    <p style={styles.route}>
+                      {bus.source} → {bus.destination}
+                    </p>
+                  </div>
 
-              <button
-                onClick={() => fetchBusBookings(bus._id)}
-                style={{ marginRight: 10 }}
-              >
-                View Bookings
-              </button>
-
-              <button onClick={() => resetBus(bus._id)}>
-                Reset Bus
-              </button>
-              
-              {/* BOOKINGS LIST */}
-              {selectedBusId === bus._id && (
-                <div style={{ marginTop: 15 }}>
-                  <h4>Bookings</h4>
-
-                  {busBookings.length === 0 ? (
-                    <p>No bookings for this bus</p>
-                  ) : (
-                    <ul>
-                      {busBookings.map((b) => (
-                        <li key={b._id}>
-                          Seat {b.seatNumber} — {b.userId.name}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <div style={styles.price}>₹ {bus.price}</div>
                 </div>
-              )}
-            </div>
-          );
-        })
-      )}
+
+                <div style={styles.meta}>
+                  <span>
+                    🕒 {new Date(bus.startDateTime).toLocaleString()}
+                  </span>
+                  <span>
+                    → {new Date(bus.endDateTime).toLocaleString()}
+                  </span>
+                </div>
+
+                <p style={styles.seats}>
+                  {bookedSeats.length} / {totalSeats} seats booked
+                </p>
+
+                <div style={styles.actions}>
+                  <button
+                    style={styles.secondary}
+                    onClick={() => fetchBusBookings(bus._id)}
+                  >
+                    View Bookings
+                  </button>
+
+                  <button
+                    style={styles.danger}
+                    onClick={() => resetBus(bus._id)}
+                  >
+                    Reset Bus
+                  </button>
+                </div>
+
+                {selectedBusId === bus._id && (
+                  <div style={styles.bookings}>
+                    <h5>Bookings</h5>
+
+                    {busBookings.length === 0 ? (
+                      <p style={styles.empty}>
+                        No bookings for this bus
+                      </p>
+                    ) : (
+                      <ul style={styles.list}>
+                        {busBookings.map((b) => (
+                          <li key={b._id}>
+                            Seat {b.seatNumber} — {b.userId.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
+
+/* ---------- STYLES ---------- */
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#2C3333",
+    padding: "30px 0",
+  },
+  container: {
+    maxWidth: 1200,
+    margin: "0 auto",
+    padding: "0 24px",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  title: {
+    color: "#E7F6F2",
+  },
+  logout: {
+    background: "#A5C9CA",
+    border: "none",
+    padding: "8px 14px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+  section: {
+    color: "#E7F6F2",
+    margin: "30px 0 20px",
+  },
+  card: {
+    background: "#395B64",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  cardTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  busNo: {
+    color: "#E7F6F2",
+    marginBottom: 4,
+  },
+  route: {
+    color: "#A5C9CA",
+    fontSize: 14,
+  },
+  price: {
+    fontSize: 22,
+    color: "#E7F6F2",
+    fontWeight: 600,
+  },
+  meta: {
+    marginTop: 10,
+    color: "#A5C9CA",
+    fontSize: 13,
+    display: "flex",
+    gap: 10,
+  },
+  seats: {
+    marginTop: 10,
+    color: "#E7F6F2",
+    fontSize: 14,
+  },
+  actions: {
+    marginTop: 15,
+    display: "flex",
+    gap: 10,
+  },
+  secondary: {
+    background: "#A5C9CA",
+    border: "none",
+    padding: "8px 14px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+  danger: {
+    background: "#D9534F",
+    border: "none",
+    padding: "8px 14px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "white",
+  },
+  bookings: {
+    marginTop: 20,
+    background: "#263232",
+    padding: 14,
+    borderRadius: 12,
+    color: "#E7F6F2",
+  },
+  list: {
+    paddingLeft: 18,
+    marginTop: 10,
+  },
+  empty: {
+    color: "#A5C9CA",
+    fontStyle: "italic",
+  },
+};

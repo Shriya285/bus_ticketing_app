@@ -16,6 +16,10 @@ const busSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    busName: {
+      type: String,
+      default:"Standard Bus",
+    },
     source: String,
     destination: String,
     startDateTime: Date,

@@ -27,7 +27,7 @@ export default function CreateBusForm({ onBusCreated }) {
       });
 
       alert("Bus created successfully");
-      onBusCreated(); // refresh bus list
+      onBusCreated();
 
       setForm({
         busNumber: "",
@@ -44,68 +44,121 @@ export default function CreateBusForm({ onBusCreated }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: 30 }}>
-      <h3>Create Bus</h3>
+    <form onSubmit={handleSubmit} style={styles.form}>
+      <h3 style={styles.title}>➕ Create New Bus</h3>
 
-      <input
-        name="busNumber"
-        placeholder="Bus Number"
-        value={form.busNumber}
-        onChange={handleChange}
-      />
-      <br /><br />
+      <div style={styles.grid}>
+        <input
+          name="busNumber"
+          placeholder="Bus Number"
+          value={form.busNumber}
+          onChange={handleChange}
+          style={styles.input}
+        />
 
-      <input
-        name="source"
-        placeholder="Source"
-        value={form.source}
-        onChange={handleChange}
-      />
-      <br /><br />
+        <input
+          name="source"
+          placeholder="Source"
+          value={form.source}
+          onChange={handleChange}
+          style={styles.input}
+        />
 
-      <input
-        name="destination"
-        placeholder="Destination"
-        value={form.destination}
-        onChange={handleChange}
-      />
-      <br /><br />
+        <input
+          name="destination"
+          placeholder="Destination"
+          value={form.destination}
+          onChange={handleChange}
+          style={styles.input}
+        />
 
-      <label>Start Date & Time</label><br />
-      <input
-        type="datetime-local"
-        name="startDateTime"
-        value={form.startDateTime}
-        onChange={handleChange}
-      />
-      <br /><br />
+        <input
+          type="number"
+          name="price"
+          placeholder="Price (₹)"
+          value={form.price}
+          onChange={handleChange}
+          style={styles.input}
+        />
 
-      <label>End Date & Time</label><br />
-      <input
-        type="datetime-local"
-        name="endDateTime"
-        value={form.endDateTime}
-        onChange={handleChange}
-      />
-      <br /><br />
+        <input
+          type="number"
+          name="totalSeats"
+          placeholder="Total Seats"
+          value={form.totalSeats}
+          onChange={handleChange}
+          style={styles.input}
+        />
 
-      <input
-        name="price"
-        placeholder="Price"
-        value={form.price}
-        onChange={handleChange}
-      />
-      <br /><br />
+        <div>
+          <label style={styles.label}>Start Date & Time</label>
+          <input
+            type="datetime-local"
+            name="startDateTime"
+            value={form.startDateTime}
+            onChange={handleChange}
+            style={styles.input}
+          />
+        </div>
 
-      <input
-        name="totalSeats"
-        placeholder="Total Seats"
-        value={form.totalSeats}
-        onChange={handleChange}
-      />
-      <br /><br />
+        <div>
+          <label style={styles.label}>End Date & Time</label>
+          <input
+            type="datetime-local"
+            name="endDateTime"
+            value={form.endDateTime}
+            onChange={handleChange}
+            style={styles.input}
+          />
+        </div>
+      </div>
 
-      <button>Create Bus</button>
+      <button style={styles.button}>Create Bus</button>
     </form>
   );
 }
+
+/* ---------- STYLES ---------- */
+const styles = {
+  form: {
+    background: "#395B64",
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 30,
+  },
+  title: {
+    color: "#E7F6F2",
+    marginBottom: 20,
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 16,
+  },
+  input: {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "none",
+    outline: "none",
+    background: "#263232",
+    color: "#E7F6F2",
+    fontSize: 14,
+  },
+  label: {
+    display: "block",
+    fontSize: 12,
+    color: "#A5C9CA",
+    marginBottom: 4,
+  },
+  button: {
+    marginTop: 20,
+    background: "#A5C9CA",
+    border: "none",
+    padding: "10px 18px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 14,
+  },
+};

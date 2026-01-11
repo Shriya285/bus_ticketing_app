@@ -30,8 +30,13 @@ exports.bookSeat = async (req, res) => {
 
     res.status(201).json({ message: "Seat booked successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Booking failed" });
-  }
+      console.error("BOOKING ERROR:", err);
+      res.status(500).json({
+        message: "Booking failed",
+        error: err.message,
+      });
+    }
+
 };
 
 // USER: View own bookings

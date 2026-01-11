@@ -1,5 +1,4 @@
 const Bus = require("../models/bus");
-const Booking = require("../models/booking");
 
 // ADMIN: Create bus
 exports.createBus = async (req, res) => {
