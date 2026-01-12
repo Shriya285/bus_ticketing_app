@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
+import CancelBookingModal from "../components/CancelBookingModal";
 import Navbar from "../components/Navbar";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -16,15 +17,17 @@ export default function MyBookings() {
       setBookings(res.data);
     } catch {
       alert("Failed to fetch bookings");
-    } finally {
-      setLoading(false);
     }
   };
 
-  const cancelBooking = async (id) => {
-    if (!window.confirm("Cancel this booking?")) return;
-    await API.delete(`/bookings/${id}`);
-    fetchBookings();
+  const confirmCancel = async () => {
+    try {
+      await API.delete(`/bookings/${selectedBooking._id}`);
+      setSelectedBooking(null);
+      fetchBookings();
+    } catch {
+      alert("Cancel failed");
+    }
   };
 
   return (
@@ -41,39 +44,47 @@ export default function MyBookings() {
         <div style={styles.container}>
           <h2 style={styles.heading}>My Bookings</h2>
 
-          {loading ? (
-            <p style={styles.sub}>Loading bookings...</p>
-          ) : bookings.length === 0 ? (
+          {bookings.filter(b => b.busId).length === 0 ? (
             <p style={styles.sub}>No bookings yet</p>
           ) : (
-            bookings.map((b) => (
-              <div key={b._id} style={styles.card}>
-                <div style={styles.topRow}>
-                  <h3 style={styles.bus}>{b.busId.busNumber}</h3>
-                  <span style={styles.seat}>Seat {b.seatNumber}</span>
+            bookings
+              .filter(b => b.busId)
+              .map((b) => (
+                <div key={b._id} style={styles.card}>
+                  <div style={styles.topRow}>
+                    <h3 style={styles.bus}>{b.busId.busNumber}</h3>
+                    <span style={styles.seat}>Seat {b.seatNumber}</span>
+                  </div>
+
+                  <p style={styles.route}>
+                    {b.busId.source} → {b.busId.destination}
+                  </p>
+
+                  <p style={styles.time}>
+                    🕒{" "}
+                    {new Date(b.busId.startDateTime).toLocaleString()} →{" "}
+                    {new Date(b.busId.endDateTime).toLocaleString()}
+                  </p>
+
+                  <button
+                    style={styles.cancelBtn}
+                    onClick={() => setSelectedBooking(b)}
+                  >
+                    Cancel Booking
+                  </button>
                 </div>
-
-                <p style={styles.route}>
-                  {b.busId.source} → {b.busId.destination}
-                </p>
-
-                <p style={styles.time}>
-                  🕒{" "}
-                  {new Date(b.busId.startDateTime).toLocaleString()} →{" "}
-                  {new Date(b.busId.endDateTime).toLocaleString()}
-                </p>
-
-                <button
-                  onClick={() => cancelBooking(b._id)}
-                  style={styles.cancelBtn}
-                >
-                  Cancel Booking
-                </button>
-              </div>
-            ))
+              ))
           )}
         </div>
       </div>
+
+      {selectedBooking && (
+        <CancelBookingModal
+          booking={selectedBooking}
+          onConfirm={confirmCancel}
+          onCancel={() => setSelectedBooking(null)}
+        />
+      )}
     </>
   );
 }
@@ -92,7 +103,7 @@ const styles = {
   },
   heading: {
     color: "#E7F6F2",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   sub: {
     color: "#A5C9CA",

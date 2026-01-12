@@ -4,36 +4,33 @@ export default function CancelBookingModal({
   onCancel,
 }) {
   return (
-    <div style={overlayStyle}>
-      <div style={modalStyle}>
-        <h3>Cancel Booking</h3>
+    <div style={styles.overlay}>
+      <div style={styles.modal}>
+        <h3 style={styles.title}>Cancel Booking</h3>
 
-        <p>
+        <p style={styles.text}>
           Are you sure you want to cancel this booking?
         </p>
 
-        <p><strong>Bus:</strong> {booking.busId.busNumber}</p>
-        <p>
-          <strong>Route:</strong>{" "}
-          {booking.busId.source} → {booking.busId.destination}
-        </p>
-        <p>
-          <strong>Seat:</strong> {booking.seatNumber}
-        </p>
-        <p>
-          <strong>Departure:</strong>{" "}
-          {new Date(booking.busId.startDateTime).toLocaleString()}
-        </p>
+        <div style={styles.details}>
+          <p><strong>Bus:</strong> {booking.busId.busNumber}</p>
+          <p>
+            <strong>Route:</strong>{" "}
+            {booking.busId.source} → {booking.busId.destination}
+          </p>
+          <p><strong>Seat:</strong> {booking.seatNumber}</p>
+          <p>
+            <strong>Departure:</strong>{" "}
+            {new Date(booking.busId.startDateTime).toLocaleString()}
+          </p>
+        </div>
 
-        <div style={{ marginTop: 20 }}>
-          <button
-            onClick={onConfirm}
-            style={{ marginRight: 10, backgroundColor: "red", color: "white" }}
-          >
-            Confirm Cancel
+        <div style={styles.actions}>
+          <button style={styles.cancelBtn} onClick={onConfirm}>
+            Yes, Cancel
           </button>
 
-          <button onClick={onCancel}>
+          <button style={styles.backBtn} onClick={onCancel}>
             Go Back
           </button>
         </div>
@@ -42,21 +39,62 @@ export default function CancelBookingModal({
   );
 }
 
-const overlayStyle = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.5)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
-
-const modalStyle = {
-  background: "#fff",
-  padding: 20,
-  borderRadius: 6,
-  width: 400,
+/* ---------- STYLES ---------- */
+const styles = {
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modal: {
+    background: "#395B64",
+    color: "#E7F6F2",
+    padding: 24,
+    borderRadius: 16,
+    width: 420,
+    maxWidth: "90%",
+  },
+  title: {
+    marginTop: 0,
+    marginBottom: 12,
+  },
+  text: {
+    color: "#A5C9CA",
+    marginBottom: 16,
+  },
+  details: {
+    background: "#2C3333",
+    padding: 14,
+    borderRadius: 12,
+    fontSize: 14,
+    lineHeight: 1.6,
+  },
+  actions: {
+    marginTop: 20,
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: 12,
+  },
+  cancelBtn: {
+    background: "#B85C5C",
+    color: "white",
+    border: "none",
+    padding: "10px 16px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+  backBtn: {
+    background: "#A5C9CA",
+    color: "#263232",
+    border: "none",
+    padding: "10px 16px",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
 };
