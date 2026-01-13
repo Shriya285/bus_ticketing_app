@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
 import CreateBusForm from "../components/CreateBusForm";
+import AdminSeatGrid from "../components/AdminSeatGrid";
 
 export default function AdminDashboard() {
   const [buses, setBuses] = useState([]);
@@ -113,6 +114,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
+                {/* 👇 BOOKINGS + SEAT GRID */}
                 {selectedBusId === bus._id && (
                   <div style={styles.bookings}>
                     <h5>Bookings</h5>
@@ -122,13 +124,21 @@ export default function AdminDashboard() {
                         No bookings for this bus
                       </p>
                     ) : (
-                      <ul style={styles.list}>
-                        {busBookings.map((b) => (
-                          <li key={b._id}>
-                            Seat {b.seatNumber} — {b.userId.name}
-                          </li>
-                        ))}
-                      </ul>
+                      <>
+                        <ul style={styles.list}>
+                          {busBookings.map((b) => (
+                            <li key={b._id}>
+                              Seat {b.seatNumber} — {b.userId.name}
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* 🔥 ADMIN SEAT GRID WITH HOVER */}
+                        <AdminSeatGrid
+                          bus={bus}
+                          bookings={busBookings}
+                        />
+                      </>
                     )}
                   </div>
                 )}

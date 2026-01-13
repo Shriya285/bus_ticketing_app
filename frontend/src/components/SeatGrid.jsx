@@ -1,7 +1,12 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 
-export default function SeatGrid({ bus, onSeatBooked }) {
+export default function SeatGrid({
+  bus,
+  onSeatBooked,
+  adminMode = false,
+  bookings = [],
+}) {
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -13,14 +18,10 @@ export default function SeatGrid({ bus, onSeatBooked }) {
   };
 
   const confirmBooking = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("You are not logged in");
-      return;
-    }
-
     try {
+      const token = localStorage.getItem("token");
+      if (!token) return alert("Not logged in");
+
       const res = await fetch("http://localhost:5001/api/bookings", {
         method: "POST",
         headers: {
@@ -34,11 +35,7 @@ export default function SeatGrid({ bus, onSeatBooked }) {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Booking failed");
-        return;
-      }
+      if (!res.ok) return alert(data.message);
 
       alert("Seat booked successfully");
       setShowModal(false);
@@ -47,6 +44,14 @@ export default function SeatGrid({ bus, onSeatBooked }) {
     } catch {
       alert("Booking error");
     }
+  };
+
+  /* 🔍 Find who booked a seat */
+  const getBookedBy = (seatNumber) => {
+    const booking = bookings.find(
+      (b) => b.seatNumber === seatNumber
+    );
+    return booking ? booking.userId.name : null;
   };
 
   /* 2 LEFT — AISLE — 2 RIGHT */
@@ -67,15 +72,12 @@ export default function SeatGrid({ bus, onSeatBooked }) {
       <div style={styles.bus}>
         {rows.map((row, idx) => (
           <div key={idx} style={styles.row}>
-            {/* LEFT */}
             <div style={styles.side}>
               {row.slice(0, 2).map(renderSeat)}
             </div>
 
-            {/* AISLE */}
             <div style={styles.aisle} />
 
-            {/* RIGHT */}
             <div style={styles.side}>
               {row.slice(2).map(renderSeat)}
             </div>
@@ -83,7 +85,7 @@ export default function SeatGrid({ bus, onSeatBooked }) {
         ))}
       </div>
 
-      {showModal && (
+      {showModal && !adminMode && (
         <BookingModal
           bus={bus}
           seatNumber={selectedSeat}
@@ -101,15 +103,28 @@ export default function SeatGrid({ bus, onSeatBooked }) {
     if (!seat) return null;
 
     const isBooked = seat.status === "BOOKED";
+    const bookedBy = isBooked ? getBookedBy(seat.seatNumber) : null;
 
     return (
       <div
         key={seat._id}
-        onClick={() => !isBooked && openModal(seat.seatNumber)}
+        title={
+          adminMode && isBooked
+            ? `Booked by ${bookedBy}`
+            : ""
+        }
+        onClick={() => {
+          if (adminMode) return;
+          if (!isBooked) openModal(seat.seatNumber);
+        }}
         style={{
           ...styles.seat,
           backgroundColor: isBooked ? "#777" : "#A5C9CA",
-          cursor: isBooked ? "not-allowed" : "pointer",
+          cursor: adminMode
+            ? "default"
+            : isBooked
+            ? "not-allowed"
+            : "pointer",
         }}
       >
         {seat.seatNumber}
@@ -132,8 +147,8 @@ function Legend({ color, label }) {
 const styles = {
   legend: {
     display: "flex",
-    gap: 24,
-    marginBottom: 20,
+    gap: 20,
+    marginBottom: 15,
     color: "#E7F6F2",
     fontSize: 14,
   },
@@ -157,7 +172,6 @@ const styles = {
   },
   row: {
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
   },
   side: {

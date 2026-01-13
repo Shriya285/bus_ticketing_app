@@ -14,3 +14,26 @@ body {
   background: #2C3333;
   color: #E7F6F2;
 }
+.seat-wrapper {
+  position: relative;
+}
+
+.admin-tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: black;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.seat-wrapper:hover .admin-tooltip {
+  opacity: 1;
+}
