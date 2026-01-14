@@ -12,8 +12,8 @@ const bookingSchema = new mongoose.Schema(
       ref: "Bus",
       required: true,
     },
-    seatNumber: {
-      type: Number,
+    seats: {
+      type: [Number], // 👈 ARRAY OF SEATS
       required: true,
     },
   },

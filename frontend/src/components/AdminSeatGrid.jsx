@@ -1,16 +1,28 @@
-export default function AdminSeatGrid({ bus, bookings }) {
-  // Map seatNumber → user name
+export default function AdminSeatGrid({ bus, bookings = [] }) {
+  if (!bus || !Array.isArray(bus.seats)) return null;
+
+  /* Map seatNumber → user name */
   const bookingMap = {};
-  bookings.forEach(b => {
-    bookingMap[b.seatNumber] = b.userId.name;
+
+  bookings.forEach((booking) => {
+    // ✅ NEW STRUCTURE (seats array)
+    if (Array.isArray(booking.seats)) {
+      booking.seats.forEach((seatNum) => {
+        bookingMap[seatNum] = booking.userId?.name || "Unknown";
+      });
+    }
+
+    // ✅ OLD STRUCTURE (single seatNumber)
+    if (booking.seatNumber) {
+      bookingMap[booking.seatNumber] =
+        booking.userId?.name || "Unknown";
+    }
   });
 
-  const seats = bus.seats || [];
-
-  // 2 LEFT — AISLE — 2 RIGHT
+  /* Build rows: 2 LEFT — AISLE — 2 RIGHT */
   const rows = [];
-  for (let i = 0; i < seats.length; i += 4) {
-    rows.push(seats.slice(i, i + 4));
+  for (let i = 0; i < bus.seats.length; i += 4) {
+    rows.push(bus.seats.slice(i, i + 4));
   }
 
   return (
@@ -22,7 +34,7 @@ export default function AdminSeatGrid({ bus, bookings }) {
           <div key={idx} style={styles.row}>
             {/* LEFT */}
             <div style={styles.side}>
-              {row.slice(0, 2).map(seat => renderSeat(seat))}
+              {row.slice(0, 2).map(renderSeat)}
             </div>
 
             {/* AISLE */}
@@ -30,7 +42,7 @@ export default function AdminSeatGrid({ bus, bookings }) {
 
             {/* RIGHT */}
             <div style={styles.side}>
-              {row.slice(2).map(seat => renderSeat(seat))}
+              {row.slice(2).map(renderSeat)}
             </div>
           </div>
         ))}
@@ -42,15 +54,20 @@ export default function AdminSeatGrid({ bus, bookings }) {
     if (!seat) return null;
 
     const bookedBy = bookingMap[seat.seatNumber];
+    const isBooked = seat.status === "BOOKED";
 
     return (
       <div
-        key={seat._id}
-        title={bookedBy ? `Booked by ${bookedBy}` : "Available"}
+        key={seat.seatNumber}
+        title={
+          isBooked && bookedBy
+            ? `Booked by ${bookedBy}`
+            : "Available"
+        }
         style={{
           ...styles.seat,
-          backgroundColor: bookedBy ? "#777" : "#A5C9CA",
-          color: bookedBy ? "#fff" : "#263232",
+          backgroundColor: isBooked ? "#4A90E2" : "#A5C9CA",
+          color: isBooked ? "#fff" : "#263232",
           cursor: "default",
         }}
       >
@@ -68,6 +85,7 @@ const styles = {
   title: {
     color: "#E7F6F2",
     marginBottom: 12,
+    fontWeight: 600,
   },
   bus: {
     background: "#395B64",

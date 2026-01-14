@@ -81,6 +81,7 @@ exports.resetBus = async (req, res) => {
   }
 };
 
+
 /* =========================
    ADMIN: Delete Bus
 ========================= */
@@ -88,12 +89,15 @@ exports.deleteBus = async (req, res) => {
   try {
     const busId = req.params.id;
 
-    await Bus.findByIdAndDelete(busId);
-    await Booking.deleteMany({ busId });
+    // 1️⃣ Delete all bookings for this bus
+    await require("../models/booking").deleteMany({ busId });
+
+    // 2️⃣ Delete the bus itself
+    await require("../models/bus").findByIdAndDelete(busId);
 
     res.json({ message: "Bus deleted successfully" });
   } catch (err) {
     console.error("DELETE BUS ERROR:", err);
-    res.status(500).json({ message: "Delete failed" });
+    res.status(500).json({ message: "Failed to delete bus" });
   }
 };

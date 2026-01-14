@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import API from "../api/api";
 import CreateBusForm from "../components/CreateBusForm";
 import AdminSeatGrid from "../components/AdminSeatGrid";
+import ResetBusModal from "../components/ResetBusModal";
 
 export default function AdminDashboard() {
   const [buses, setBuses] = useState([]);
   const [selectedBusId, setSelectedBusId] = useState(null);
   const [busBookings, setBusBookings] = useState([]);
+  const [busToReset, setBusToReset] = useState(null);
 
   useEffect(() => {
     fetchBuses();
@@ -41,6 +43,17 @@ export default function AdminDashboard() {
       fetchBuses();
     } catch {
       alert("Reset failed");
+    }
+  };
+
+  const deleteBus = async (id) => {
+    if (!window.confirm("Delete this bus permanently?")) return;
+
+    try {
+      await API.delete(`/buses/${id}`);
+      fetchBuses();
+    } catch {
+      alert("Delete failed");
     }
   };
 
@@ -106,15 +119,23 @@ export default function AdminDashboard() {
                     View Bookings
                   </button>
 
+                  {/* ✅ RESET BUS BUTTON */}
                   <button
-                    style={styles.danger}
-                    onClick={() => resetBus(bus._id)}
+                    style={styles.warning}
+                    onClick={() => setBusToReset(bus)}
                   >
                     Reset Bus
                   </button>
+
+                  <button
+                    style={styles.danger}
+                    onClick={() => deleteBus(bus._id)}
+                  >
+                    Delete Bus
+                  </button>
                 </div>
 
-                {/* 👇 BOOKINGS + SEAT GRID */}
+                {/* BOOKINGS + SEAT GRID */}
                 {selectedBusId === bus._id && (
                   <div style={styles.bookings}>
                     <h5>Bookings</h5>
@@ -128,12 +149,11 @@ export default function AdminDashboard() {
                         <ul style={styles.list}>
                           {busBookings.map((b) => (
                             <li key={b._id}>
-                              Seat {b.seatNumber} — {b.userId.name}
+                              Seats {b.seats.join(", ")} — {b.userId.name}
                             </li>
                           ))}
                         </ul>
 
-                        {/* 🔥 ADMIN SEAT GRID WITH HOVER */}
                         <AdminSeatGrid
                           bus={bus}
                           bookings={busBookings}
@@ -147,6 +167,18 @@ export default function AdminDashboard() {
           })
         )}
       </div>
+
+      {/* ✅ RESET MODAL (GLOBAL, NOT INSIDE MAP) */}
+      {busToReset && (
+        <ResetBusModal
+          bus={busToReset}
+          onConfirm={async () => {
+            await resetBus(busToReset._id);
+            setBusToReset(null);
+          }}
+          onCancel={() => setBusToReset(null)}
+        />
+      )}
     </div>
   );
 }
@@ -197,7 +229,6 @@ const styles = {
   },
   busNo: {
     color: "#E7F6F2",
-    marginBottom: 4,
   },
   route: {
     color: "#A5C9CA",
@@ -218,7 +249,6 @@ const styles = {
   seats: {
     marginTop: 10,
     color: "#E7F6F2",
-    fontSize: 14,
   },
   actions: {
     marginTop: 15,
@@ -232,6 +262,15 @@ const styles = {
     borderRadius: 8,
     cursor: "pointer",
     fontWeight: 600,
+  },
+  warning: {
+    background: "#E6B566",
+    border: "none",
+    padding: "8px 14px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+    color: "#263232",
   },
   danger: {
     background: "#D9534F",

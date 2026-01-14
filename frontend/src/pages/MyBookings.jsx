@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedSeat, setSelectedSeat] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -22,8 +23,19 @@ export default function MyBookings() {
 
   const confirmCancel = async () => {
     try {
-      await API.delete(`/bookings/${selectedBooking._id}`);
+      // 🔥 Cancel single seat
+      if (selectedSeat) {
+        await API.delete(`/bookings/${selectedBooking._id}/seat`, {
+          data: { seatNumber: selectedSeat },
+        });
+      }
+      // 🔥 Cancel entire booking
+      else {
+        await API.delete(`/bookings/${selectedBooking._id}`);
+      }
+
       setSelectedBooking(null);
+      setSelectedSeat(null);
       fetchBookings();
     } catch {
       alert("Cancel failed");
@@ -44,36 +56,52 @@ export default function MyBookings() {
         <div style={styles.container}>
           <h2 style={styles.heading}>My Bookings</h2>
 
-          {bookings.filter(b => b.busId).length === 0 ? (
+          {bookings.length === 0 ? (
             <p style={styles.sub}>No bookings yet</p>
           ) : (
-            bookings
-              .filter(b => b.busId)
-              .map((b) => (
-                <div key={b._id} style={styles.card}>
-                  <div style={styles.topRow}>
-                    <h3 style={styles.bus}>{b.busId.busNumber}</h3>
-                    <span style={styles.seat}>Seat {b.seatNumber}</span>
-                  </div>
+            bookings.map((b) => (
+              <div key={b._id} style={styles.card}>
+                <h3 style={styles.bus}>{b.busId.busNumber}</h3>
 
-                  <p style={styles.route}>
-                    {b.busId.source} → {b.busId.destination}
-                  </p>
+                <p style={styles.route}>
+                  {b.busId.source} → {b.busId.destination}
+                </p>
 
-                  <p style={styles.time}>
-                    🕒{" "}
-                    {new Date(b.busId.startDateTime).toLocaleString()} →{" "}
-                    {new Date(b.busId.endDateTime).toLocaleString()}
-                  </p>
+                <p style={styles.time}>
+                  🕒{" "}
+                  {new Date(b.busId.startDateTime).toLocaleString()} →{" "}
+                  {new Date(b.busId.endDateTime).toLocaleString()}
+                </p>
 
-                  <button
-                    style={styles.cancelBtn}
-                    onClick={() => setSelectedBooking(b)}
-                  >
-                    Cancel Booking
-                  </button>
+                {/* 🔥 Seat chips */}
+                <div style={styles.seatRow}>
+                  {b.seats.map((seat) => (
+                    <span
+                      key={seat}
+                      style={styles.seat}
+                      title="Cancel this seat"
+                      onClick={() => {
+                        setSelectedBooking(b);
+                        setSelectedSeat(seat);
+                      }}
+                    >
+                      Seat {seat} ✖
+                    </span>
+                  ))}
                 </div>
-              ))
+
+                {/* 🔥 Cancel all */}
+                <button
+                  style={styles.cancelAll}
+                  onClick={() => {
+                    setSelectedBooking(b);
+                    setSelectedSeat(null);
+                  }}
+                >
+                  Cancel Entire Booking
+                </button>
+              </div>
+            ))
           )}
         </div>
       </div>
@@ -81,8 +109,12 @@ export default function MyBookings() {
       {selectedBooking && (
         <CancelBookingModal
           booking={selectedBooking}
+          seatNumber={selectedSeat}
           onConfirm={confirmCancel}
-          onCancel={() => setSelectedBooking(null)}
+          onCancel={() => {
+            setSelectedBooking(null);
+            setSelectedSeat(null);
+          }}
         />
       )}
     </>
@@ -114,32 +146,34 @@ const styles = {
     padding: 20,
     marginBottom: 20,
   },
-  topRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   bus: {
     color: "#E7F6F2",
-    margin: 0,
-  },
-  seat: {
-    background: "#A5C9CA",
-    color: "#263232",
-    padding: "6px 12px",
-    borderRadius: 8,
-    fontWeight: 600,
+    marginBottom: 6,
   },
   route: {
     color: "#A5C9CA",
-    marginTop: 8,
+    fontSize: 14,
   },
   time: {
     color: "#E7F6F2",
     fontSize: 14,
     marginTop: 6,
   },
-  cancelBtn: {
+  seatRow: {
+    marginTop: 14,
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  seat: {
+    background: "#A5C9CA",
+    color: "#263232",
+    padding: "6px 12px",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+  },
+  cancelAll: {
     marginTop: 14,
     background: "#B85C5C",
     color: "white",
